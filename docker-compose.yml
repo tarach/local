@@ -8,6 +8,7 @@ services:
             - 127.0.0.1:80:80
         volumes:
             - /var/run/docker.sock:/tmp/docker.sock:ro
+
     portainer:
         image: portainer/portainer
         command: -H unix:///var/run/docker.sock
@@ -18,5 +19,27 @@ services:
         volumes:
             - portainer-data:/data
             - /var/run/docker.sock:/var/run/docker.sock
+
+    powerdns:
+        build:
+          context: ./powerdns
+        image: tarach/powerdns:4.1.10-sqlite3
+        command: --gsqlite3-pragma-foreign-keys=yes
+        container_name: powerdns
+        ports:
+            - 127.0.0.1:53:53
+            - 127.0.0.1:53:53/udp
+            - 127.0.0.1:53000:53000
+        environment:
+            - VIRTUAL_HOST=pdns.local
+            - VIRTUAL_PORT=8081
+            - ENABLE_CATCH_ALL=yes
+            - DB_HOST=/data/pdns.sqlite3
+            - SQLITE3_SYNCHRONOUS=0
+            - SQLITE3_FOREIGN_KEYS=true
+        volumes:
+            - powerdns-data:/data
+
 volumes:
+    powerdns-data:
     portainer-data:
